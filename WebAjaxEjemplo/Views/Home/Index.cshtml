@@ -1,0 +1,381 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<a href="#" class="btn btn-primary" id="lnkAgregar">Agregar </a>
+
+<div id="formulario">
+    <table class="table table-light">
+        <tr>
+            <td> Nombre </td>
+            <td>
+                <input type="text" class="form-control" name="name" id="txtNombre" />
+                <input type="hidden" name="name" id="txtId"/>
+            </td>
+        </tr>
+        <tr>
+            <td> Edad </td>
+            <td>
+                <input type="number" class="form-control" name="name" id="txtEdad" />
+                
+            </td>
+        </tr>
+        <tr>
+            <td> Precio </td>
+            <td>
+                <input type="text" class="form-control" name="name" id="txtPrecio" />
+            </td>
+        </tr>
+        <tr>
+            <td> Especie </td>
+            <td>
+                <input type="text" class="form-control" name="name" id="txtEspecie" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="button" name="" value="Agregar" id="btnAgregar" class="btn btn-success" />
+                <input type="button" name="" value="Borrar" id="btnBorrar" class="btn btn-danger" />
+                <input type="button" name="" value="Editar" id="btnEditar" class="btn btn-warning" />
+            </td>
+            <td>
+                <input type="button" name="" value="Cancelar" id="btnCancelar" class="btn btn-danger" />
+            </td>
+        </tr>
+
+    </table>
+</div>
+
+<div class="input-group" id="Buscador">
+    <div class="form-outline">
+        <input type="search" id="form1" class="form-control" placeholder="Search..." />
+        
+    </div>
+    <button type="button" class="btn btn-primary">
+        <i class="bi bi-se"></i>
+    </button>
+</div>
+
+<div id="TablaDatos">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th> Nombre</th>
+                <th> Edad</th>
+                <th> Precio</th>
+            </tr>
+        </thead>
+        <tbody id="infoTabla">
+
+        </tbody>
+    </table>
+</div>
+
+
+
+<div id="TablaDatos2">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th> Nombre</th>
+                <th> Edad</th>
+                <th> Precio</th>
+            </tr>
+        </thead>
+        <tbody id="infoTabla">
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        $("#TablaDatos").show();
+        $("#TablaDatos2").hide();
+        $("#formulario").hide();
+        $("#Buscador").show();
+
+        ObtenerInfoTabla();
+
+    });
+
+    $("#lnkAgregar").click(function () {
+
+        MostrarFormulario();
+    });
+
+    $("#btnCancelar").click(function () {
+
+        $("#TablaDatos").show();
+        $("#formulario").hide();
+
+        $("#lnkAgregar").show();
+    });
+
+    function OcultarFormulario() {
+        //Limpiar cajas de texto
+        //mostrar link agregar
+        $("#TablaDatos").show();
+        $("#formulario").hide();
+
+        $("#lnkAgregar").show();
+
+        $("#txtNombre").val(""),
+        $("#txtEdad").val(""),
+        $("#txtPrecio").val(""),
+            $("#txtEspecie").val("")
+
+        $("#txtNombre").prop("readOnly", false);
+        $("#txtEdad").prop("readOnly", false);
+        $("#txtPrecio").prop("readOnly", false);
+        $("#txtEspecie").prop("readOnly", false);
+
+        $("#btnAgregar").show();
+        $("#btnBorrar").hide();
+    }
+
+    function MostrarFormulario() {
+        //Limpiar cajas de texto
+        //mostrar link agregar
+        $("#TablaDatos").hide();
+        $("#formulario").show();
+
+        $("#lnkAgregar").hide();
+        
+
+        $("#txtNombre").val("");
+        $("#txtEdad").val("");
+        $("#txtPrecio").val("");
+        $("#txtEspecie").val("");
+        $("#txtId").val("");
+
+        $("#btnAgregar").show();
+        $("#btnBorrar").hide();
+        $("#btnEditar").hide();
+    }
+
+    $("#btnAgregar").click(function () {
+        var mascotas = {
+            nombre: $("#txtNombre").val(),
+            edad: $("#txtEdad").val(),
+            precio: $("#txtPrecio").val(),
+            especieId: $("#txtEspecie").val()
+        };
+
+        $.ajax({
+            type: "Post",
+            url: "/Home/Agregar",
+            contentType: "application/json; charset = utf-8",
+            dataType: "JSON",
+            data: JSON.stringify(mascotas),
+            success: function (respuesta) { 
+                if (respuesta.mensaje == 'ok') {
+                    //Llamar la funcion que muestre la tabla
+                    ObtenerInfoTabla();
+
+                    OcultarFormulario();
+
+                }
+                else {
+                    alert(respuesta.mensaje)
+                }
+            },
+            error: function (objXMLHttpRequest) {
+                alert('Error! de comunicacion entre AJAX y servidor');
+            }
+        });
+    });
+
+    function ObtenerInfoTabla() {
+        $.ajax({
+            type: "Get",
+            url: "/Home/Obtener",
+            contentType: "application/json; charset = utf-8",
+            success: function (respuesta) {
+                if (respuesta.mensaje == 'ok') {
+                    //Llamar la funcion que llena la tabla de HTML
+                    LlenarTabla(respuesta.ls);
+                }
+                else
+                {
+                    alert(respuesta.mensaje)
+                }
+            },
+            error: function (objXMLHttpRequest) {
+                alert('Error! de comunicacion entre AJAX y servidor');
+            } 
+        });
+    }
+
+    function LlenarTabla(infoTabla) {
+
+        var t = '';
+        $.each(infoTabla, function (i, element) {
+         
+            t += '<tr>';
+
+            t += '<td>';
+            t += element.nombre;
+            t += '</td>';
+
+            t += '<td>';
+            t += element.edad;
+            t += '</td>';
+
+            t += '<td>';
+            t += element.precio;
+            t += '</td>';
+
+            t += '<td>';
+            t += '<a href="#" class="btn btn-danger" onclick="lnkBorrar('+ element.idMascota +')">Borrar</a>';
+            t += '</td>';
+
+            t += '<td>';
+            t += '<a href="#" class="btn btn-warning" onclick="lnkEditar(' + element.idMascota + ')">Editar</a>';
+            t += '</td>';
+
+            t += '</tr>';
+
+        })
+        $("#infoTabla").empty();
+        $("#infoTabla").html(t);
+    }
+
+    function lnkBorrar(id) {
+        $.ajax({
+            type: "Get",
+            url: "/Home/ObtenerPorId/" + id,
+            contentType: "application/json; charset = utf-8",
+            success: function (respuesta) {
+                if (respuesta.mensaje == 'ok') {
+
+                    MostrarFormulario();
+
+
+                //  Asignar valores 
+                    $("#txtNombre").val(respuesta.mascota.nombre);
+                    $("#txtEdad").val(respuesta.mascota.edad);
+                    $("#txtPrecio").val(respuesta.mascota.precio);
+                    $("#txtEspecie").val(respuesta.mascota.especieId);
+
+                    $("#txtId").val(respuesta.mascota.idMascota);
+                //Poner las cajas en ReadOnly
+                    $("#txtNombre").prop("readOnly", true);
+                    $("#txtEdad").prop("readOnly", true);
+                    $("#txtPrecio").prop("readOnly", true);
+                    $("#txtEspecie").prop("readOnly", true); 
+
+                    $("#btnAgregar").hide();
+                    $("#btnBorrar").show();
+                    $("#btnEditar").hide();
+
+
+                }
+                else {
+                    alert(respuesta.mensaje)
+                }
+            },
+            error: function (objXMLHttpRequest) {
+                alert('Error! de comunicacion entre AJAX y servidor');
+            } 
+        });
+
+        $("#btnBorrar").click(function () {
+            debugger;
+            $.ajax({
+
+                type: "Post",
+                url: "/Home/BorrarDeServidor/" + $("#txtId").val(),
+                contentType: "application/json; charset = utf-8",
+                success: function (respuesta) {
+                    if (respuesta.mensaje == 'ok') {
+                        //Llamar la funcion que muestre la tabla
+                        ObtenerInfoTabla();
+                        OcultarFormulario();
+                    }
+                    else {
+                        alert(respuesta.mensaje)
+                    }
+                },
+                error: function (objXMLHttpRequest) {
+                    alert('Error! de comunicacion entre AJAX y servidor');
+                }
+            });
+        });
+    }
+
+    function lnkEditar(id) {
+        $.ajax({
+            type: "Get",
+            url: "/Home/ObtenerPorId/" + id,
+            contentType: "application/json; charset = utf-8",
+            success: function (respuesta) {
+                if (respuesta.mensaje == 'ok') {
+
+                    MostrarFormulario();
+
+
+                    //  Asignar valores 
+                    $("#txtNombre").val(respuesta.mascota.nombre);
+                    $("#txtEdad").val(respuesta.mascota.edad);
+                    $("#txtPrecio").val(respuesta.mascota.precio);
+                    $("#txtEspecie").val(respuesta.mascota.especieId);
+
+                    $("#txtId").val(respuesta.mascota.idMascota);
+                    //Poner las cajas en ReadOnly
+                    $("#txtNombre").prop("readOnly", false);
+                    $("#txtEdad").prop("readOnly", false);
+                    $("#txtPrecio").prop("readOnly", false);
+                    $("#txtEspecie").prop("readOnly", false);
+
+                    $("#btnAgregar").hide();
+                    $("#btnBorrar").hide();
+                    $("#btnEditar").show();
+
+                }
+                else {
+                    alert(respuesta.mensaje)
+                }
+            },
+            error: function (objXMLHttpRequest) {
+                alert('Error! de comunicacion entre AJAX y servidor');
+            }
+        });
+
+        $("#btnEditar").click(function () {
+            var mascotas = {
+                idMascota: $("#txtId").val(),
+                nombre: $("#txtNombre").val(),
+                edad: $("#txtEdad").val(),
+                precio: $("#txtPrecio").val(),
+                especieId: $("#txtEspecie").val()
+            };
+
+            $.ajax({
+                type: "Post",
+                url: "/Home/Editar/" ,
+                contentType: "application/json; charset = utf-8",
+                dataType: "JSON",
+                data: JSON.stringify(mascotas),
+                success: function (respuesta) {
+                    if (respuesta.mensaje == 'ok') {
+                        //Llamar la funcion que muestre la tabla
+                        ObtenerInfoTabla();
+
+                        OcultarFormulario();
+
+                    }
+                    else {
+                        alert(respuesta.mensaje)
+                    }
+                },
+                error: function (objXMLHttpRequest) {
+                    alert('Error! de comunicacion entre AJAX y servidor');
+                }
+            });
+        });
+    }
+</script>
